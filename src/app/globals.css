@@ -1,26 +1,138 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "./animations.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --radius: 0.625rem;
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    /* Aurora background variables */
+    --white: #ffffff;
+    --black: #000000;
+    --transparent: transparent;
+    --blue-300: #93b7be; /* Light blue */
+    --blue-400: #699ba5; /* Light blue 400 */
+    --blue-500: #12263a; /* Prussian blue */
+    --indigo-300: #26527d; /* Prussian blue 600 */
+    --violet-200: #3b7dbf; /* Prussian blue 700 */
+
+    /* Dark mode colors (default) */
+    --background: #12263a; /* Prussian blue */
+    --foreground: #f1f0ea; /* Isabelline */
+    --card: #0b1723; /* Prussian blue 300 */
+    --card-foreground: #f1f0ea; /* Isabelline */
+    --popover: #0b1723; /* Prussian blue 300 */
+    --popover-foreground: #f1f0ea; /* Isabelline */
+    --primary: #93b7be; /* Light blue */
+    --primary-foreground: #12263a; /* Prussian blue */
+    --secondary: #26527d; /* Prussian blue 600 */
+    --secondary-foreground: #f1f0ea; /* Isabelline */
+    --muted: #070f17; /* Prussian blue 200 */
+    --muted-foreground: #a8c5cb; /* Light blue 600 */
+    --accent: #d4e2e5; /* Light blue 800 */
+    --accent-foreground: #12263a; /* Prussian blue */
+    --destructive: #ef4444; /* Red */
+    --border: #26527d; /* Prussian blue 600 */
+    --input: #26527d; /* Prussian blue 600 */
+    --ring: #93b7be; /* Light blue */
+
+    /* Chart colors */
+    --chart-1: #93b7be; /* Light blue */
+    --chart-2: #a8c5cb; /* Light blue 600 */
+    --chart-3: #d4e2e5; /* Light blue 800 */
+    --chart-4: #26527d; /* Prussian blue 600 */
+    --chart-5: #3b7dbf; /* Prussian blue 700 */
+
+    /* Sidebar colors */
+    --sidebar: #0b1723; /* Prussian blue 300 */
+    --sidebar-foreground: #f1f0ea; /* Isabelline */
+    --sidebar-primary: #93b7be; /* Light blue */
+    --sidebar-primary-foreground: #12263a; /* Prussian blue */
+    --sidebar-accent: #26527d; /* Prussian blue 600 */
+    --sidebar-accent-foreground: #f1f0ea; /* Isabelline */
+    --sidebar-border: #26527d; /* Prussian blue 600 */
+    --sidebar-ring: #93b7be; /* Light blue */
+  }
+
+  * {
+    border-color: var(--border);
+    outline-color: rgba(var(--ring), 0.5);
+  }
+  html {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    margin: 0;
+    padding: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .bg-radial {
+    background-image: radial-gradient(var(--tw-gradient-stops));
+  }
+
+  .bg-linear-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+  }
+
+  .bg-linear-to-l {
+    background-image: linear-gradient(to left, var(--tw-gradient-stops));
+  }
+
+  .pause-animation {
+    animation-play-state: paused !important;
+  }
+
+  .newsletter-glow-bg {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(18, 38, 58, 0.2) 0%, rgba(88, 139, 139, 0.2) 100%);
+    box-shadow: 0 0 30px 5px rgba(18, 38, 58, 0.15);
+    backdrop-filter: blur(5px);
+  }
+
+  .bg-r.fade-top-lg {
+    background: radial-gradient(circle at center, rgba(88, 139, 139, 0.3) 0%, transparent 100%);
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 100px 50px rgba(18, 38, 58, 0.25);
+  }
+
+  /* Dark mode specific styles */
+  .dark .fade-top-lg {
+    background: radial-gradient(circle at center, rgba(88, 139, 139, 0.4) 0%, transparent 100%);
+  }
+
+  .dark .shadow-glow {
+    box-shadow: 0 0 100px 50px rgba(38, 82, 125, 0.35);
+  }
+}
+
+@keyframes infinite-slider {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+.animate-infinite-slider {
+  animation: infinite-slider linear infinite;
 }

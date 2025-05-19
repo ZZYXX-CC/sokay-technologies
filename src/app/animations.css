@@ -1,0 +1,110 @@
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
+}
+
+.delay-700 {
+  animation-delay: 700ms;
+}
+
+.fade-top-lg {
+  background: radial-gradient(circle at center, rgba(147, 183, 190, 0.3) 0%, transparent 100%);
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.shadow-glow {
+  box-shadow: 0 0 100px 50px rgba(18, 38, 58, 0.25);
+}
+
+/* Dark mode specific styles */
+.dark .fade-top-lg {
+  background: radial-gradient(circle at center, rgba(147, 183, 190, 0.4) 0%, transparent 100%);
+}
+
+.dark .shadow-glow {
+  box-shadow: 0 0 100px 50px rgba(38, 82, 125, 0.35);
+}
+
+/* Newsletter section styles */
+.newsletter-glow-bg {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(18, 38, 58, 0.2) 0%, rgba(147, 183, 190, 0.2) 100%);
+  box-shadow: 0 0 30px 5px rgba(18, 38, 58, 0.15);
+  backdrop-filter: blur(5px);
+}
+
+.newsletter-form-container {
+  position: relative;
+  z-index: 10;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Marquee animations */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes marquee2 {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+}
+
+.animate-marquee2 {
+  animation: marquee2 15s linear infinite;
+}

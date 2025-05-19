@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="50" fill="#10B981" fill-opacity="0.2"/>
+  <circle cx="50" cy="40" r="20" fill="#10B981" fill-opacity="0.4"/>
+  <path d="M25 85C25 68.4315 36.4315 55 50 55C63.5685 55 75 68.4315 75 85V100H25V85Z" fill="#10B981" fill-opacity="0.4"/>
+  <circle cx="40" cy="35" r="5" fill="#111111" fill-opacity="0.3"/>
+  <circle cx="60" cy="35" r="5" fill="#111111" fill-opacity="0.3"/>
+</svg>
