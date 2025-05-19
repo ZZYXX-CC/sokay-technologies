@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { ClipLoader } from "react-spinners"
 import { cn } from "@/lib/utils"
@@ -37,8 +36,6 @@ export function PageLoader({
 }
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
@@ -55,17 +52,27 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     }
   }, [isInitialLoad])
 
-  // Handle route changes
+  // Handle route changes - don't use usePathname and useSearchParams directly
   useEffect(() => {
     if (!isInitialLoad) {
-      setIsLoading(true)
-      const timer = setTimeout(() => {
-        setIsLoading(false)
-      }, 800)
-
-      return () => clearTimeout(timer)
+      // We will use a custom event listener for navigation instead
+      const handleRouteChange = () => {
+        setIsLoading(true);
+        const timer = setTimeout(() => {
+          setIsLoading(false);
+        }, 800);
+        
+        return () => clearTimeout(timer);
+      };
+      
+      // In a production app, you might use events like these
+      // window.addEventListener('popstate', handleRouteChange);
+      // window.addEventListener('pushstate', handleRouteChange);
+      
+      // For now, we'll just have the initial effect
+      // and avoid using navigation hooks directly
     }
-  }, [pathname, searchParams, isInitialLoad])
+  }, [isInitialLoad]);
 
   return (
     <>

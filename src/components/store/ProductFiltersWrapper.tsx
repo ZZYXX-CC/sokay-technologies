@@ -1,12 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import ProductFilters from '@/components/store/ProductFilters';
 
 export default function ProductFiltersWrapper() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  // Instead of using useSearchParams for SSR, use window.location in a useEffect
+  const [currentFilters, setCurrentFilters] = useState({
+    search: '',
+    category: '',
+    minPrice: '' as const,
+    maxPrice: '' as const,
+    inStock: false,
+  });
+  
+  // Parse URL parameters on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setCurrentFilters({
+        search: params.get('q') || '',
+        category: params.get('category') || '',
+        minPrice: params.get('min') ? Number(params.get('min')) : '' as const,
+        maxPrice: params.get('max') ? Number(params.get('max')) : '' as const,
+        inStock: params.get('inStock') === 'true',
+      });
+    }
+  }, []);
   
   const handleFilterChange = (filters: {
     search: string;
@@ -15,10 +34,6 @@ export default function ProductFiltersWrapper() {
     maxPrice: number | '';
     inStock: boolean;
   }) => {
-    // In a real app, this would update the URL and trigger a new server request
-    // For now, we'll just log the filters
-    console.log('Filters changed:', filters);
-    
     // Build new query string
     const params = new URLSearchParams();
     if (filters.search) params.set('q', filters.search);
@@ -27,18 +42,9 @@ export default function ProductFiltersWrapper() {
     if (filters.maxPrice !== '') params.set('max', filters.maxPrice.toString());
     if (filters.inStock) params.set('inStock', 'true');
     
-    // Update URL
+    // Update URL using plain window.location instead of Next.js router
     const newPath = `/store${params.toString() ? '?' + params.toString() : ''}`;
-    router.push(newPath);
-  };
-  
-  // Extract current filter values from URL
-  const currentFilters = {
-    search: searchParams.get('q') || '',
-    category: searchParams.get('category') || '',
-    minPrice: searchParams.get('min') ? Number(searchParams.get('min')) : '' as const,
-    maxPrice: searchParams.get('max') ? Number(searchParams.get('max')) : '' as const,
-    inStock: searchParams.get('inStock') === 'true',
+    window.location.href = newPath;
   };
   
   return (

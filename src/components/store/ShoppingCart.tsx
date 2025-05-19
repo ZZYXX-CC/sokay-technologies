@@ -2,11 +2,19 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cart';
+
+// Use simple anchor instead of next/link to avoid client-side navigation issues
+function SimpleLink({ href, children, className }: { href: string, children: React.ReactNode, className?: string }) {
+  return (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  );
+}
 
 export default function ShoppingCart() {
   const items = useCartStore(state => state.items);
@@ -48,7 +56,7 @@ export default function ShoppingCart() {
         <h2 className="text-2xl font-semibold mb-2 text-white">Your cart is empty</h2>
         <p className="text-white mb-6">Looks like you haven't added any products to your cart yet.</p>
         <Button asChild className="bg-light_blue-500 hover:bg-light_blue-400 text-prussian_blue font-semibold border border-light_blue-200/50">
-          <Link href="/store">Continue Shopping</Link>
+          <SimpleLink href="/store">Continue Shopping</SimpleLink>
         </Button>
       </div>
     );

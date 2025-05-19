@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS products (
   images TEXT[] NOT NULL,
   category TEXT NOT NULL,
   in_stock BOOLEAN NOT NULL DEFAULT TRUE,
+  slug TEXT UNIQUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -14,13 +15,26 @@ CREATE TABLE IF NOT EXISTS products (
 -- Create orders table
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES auth.users(id),
+  user_id UUID REFERENCES auth.users(id),
   product_ids UUID[] NOT NULL,
   total_amount DECIMAL(10, 2) NOT NULL,
   payment_method TEXT NOT NULL CHECK (payment_method IN ('paystack', 'cod')),
   status TEXT NOT NULL CHECK (status IN ('pending', 'processing', 'completed', 'cancelled')) DEFAULT 'pending',
+  customer_info JSONB NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create order_items table
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  image TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create subscribers table
@@ -72,13 +86,35 @@ CREATE POLICY "Users can view their own orders"
   TO authenticated
   USING (auth.uid() = user_id OR (auth.jwt() ->> 'role'::text) = 'admin'::text);
 
-CREATE POLICY "Users can create their own orders"
+CREATE POLICY "Anyone can create orders"
   ON orders FOR INSERT
-  TO authenticated
-  USING (auth.uid() = user_id);
+  USING (true);
 
 CREATE POLICY "Only admins can update orders"
   ON orders FOR UPDATE
+  TO authenticated
+  USING ((auth.jwt() ->> 'role'::text) = 'admin'::text);
+
+-- Order Items: Users can view their own order items, admins can view all
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own order items"
+  ON order_items FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM orders
+      WHERE orders.id = order_items.order_id
+      AND (orders.user_id = auth.uid() OR (auth.jwt() ->> 'role'::text) = 'admin'::text)
+    )
+  );
+
+CREATE POLICY "Anyone can create order items"
+  ON order_items FOR INSERT
+  USING (true);
+
+CREATE POLICY "Only admins can update order items"
+  ON order_items FOR UPDATE
   TO authenticated
   USING ((auth.jwt() ->> 'role'::text) = 'admin'::text);
 

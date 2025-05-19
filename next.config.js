@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Disable static optimization to avoid the useSearchParams error
+  // This is a temporary workaround
+  output: process.env.NEXT_BUILD_STATIC === 'true' ? 'standalone' : undefined,
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -9,14 +12,10 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    // This ensures images are displayed in development
     unoptimized: process.env.NODE_ENV === 'development',
-    // Add domains for local development
     domains: ['localhost'],
   },
-  // Add compression
   compress: true,
-  // Increase performance budget
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
