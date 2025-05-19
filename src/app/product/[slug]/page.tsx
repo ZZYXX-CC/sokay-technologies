@@ -10,15 +10,33 @@ import { productData, productFeatures, productSpecifications } from '@/lib/data/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Metadata } from 'next';
 
-interface ProductPageProps {
-  params: {
-    slug: string;
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { slug: string } 
+}): Promise<Metadata> {
+  const { slug } = params;
+  const product = productData.find(p => p.slug === slug);
+  
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+    };
+  }
+  
+  return {
+    title: product.name,
+    description: product.description,
   };
-  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
+export default function ProductPage({ 
+  params 
+}: { 
+  params: { slug: string } 
+}) {
   const { slug } = params;
 
   // Use our mock data instead of fetching from Supabase
