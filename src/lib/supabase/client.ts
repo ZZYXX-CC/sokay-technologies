@@ -4,7 +4,21 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Check if required environment variables are set
+if (!supabaseUrl || !supabaseAnonKey) {
+  if (typeof window !== 'undefined') {
+    // Only log in browser, not during SSR
+    console.warn('Missing Supabase environment variables. Some functionality may be limited.');
+  }
+}
+
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder-url.supabase.co',
+  supabaseAnonKey || 'placeholder-key'
+);
+
+// Mock functions for when Supabase is not properly configured
+const isMockMode = !supabaseUrl || !supabaseAnonKey;
 
 // Database types
 export type Product = {
@@ -52,8 +66,38 @@ export type OrderItem = {
   created_at: string;
 };
 
+// Mock data for when Supabase is not available
+const mockProducts: Product[] = [
+  {
+    id: '1',
+    name: 'Sokay A1 Microphone',
+    description: 'Professional grade microphone with crystal clear audio.',
+    price: 19999,
+    images: ['/images/products/sokay-A1-microphone-product-350x350.png'],
+    category: 'microphones',
+    in_stock: true,
+    created_at: new Date().toISOString(),
+    slug: 'sokay-a1-microphone'
+  },
+  {
+    id: '2',
+    name: 'Sokay H200 Headphones',
+    description: 'Premium over-ear headphones with noise cancellation.',
+    price: 24999,
+    images: ['/images/products/sokay-headphones-studio-350x350.png'],
+    category: 'headphones',
+    in_stock: true,
+    created_at: new Date().toISOString(),
+    slug: 'sokay-h200-headphones'
+  }
+];
+
 // Database functions
 export async function getProducts() {
+  if (isMockMode) {
+    return mockProducts;
+  }
+
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -61,13 +105,17 @@ export async function getProducts() {
   
   if (error) {
     console.error('Error fetching products:', error);
-    return [];
+    return mockProducts;
   }
   
   return data as Product[];
 }
 
 export async function getProductBySlug(slug: string) {
+  if (isMockMode) {
+    return mockProducts.find(p => p.slug === slug) || null;
+  }
+
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -76,13 +124,21 @@ export async function getProductBySlug(slug: string) {
   
   if (error) {
     console.error('Error fetching product:', error);
-    return null;
+    return mockProducts.find(p => p.slug === slug) || null;
   }
   
   return data as Product;
 }
 
 export async function createOrder(order: Omit<Order, 'id' | 'created_at'>) {
+  if (isMockMode) {
+    return {
+      id: `mock-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      ...order
+    } as Order;
+  }
+
   const { data, error } = await supabase
     .from('orders')
     .insert(order)
@@ -98,6 +154,14 @@ export async function createOrder(order: Omit<Order, 'id' | 'created_at'>) {
 }
 
 export async function addSubscriber(email: string) {
+  if (isMockMode) {
+    return {
+      id: `mock-${Date.now()}`,
+      email,
+      subscribed_at: new Date().toISOString()
+    } as Subscriber;
+  }
+  
   const { data, error } = await supabase
     .from('subscribers')
     .insert({ email })
@@ -113,6 +177,15 @@ export async function addSubscriber(email: string) {
 }
 
 export async function createOrderItems(orderId: string, items: Omit<OrderItem, 'id' | 'order_id' | 'created_at'>[]) {
+  if (isMockMode) {
+    return items.map((item, index) => ({
+      id: `mock-item-${index}-${Date.now()}`,
+      order_id: orderId,
+      created_at: new Date().toISOString(),
+      ...item
+    })) as OrderItem[];
+  }
+  
   // items: [{ product_id, name, price, quantity, image }]
   const insertItems = items.map(item => ({ ...item, order_id: orderId }));
   const { data, error } = await supabase
@@ -127,6 +200,10 @@ export async function createOrderItems(orderId: string, items: Omit<OrderItem, '
 }
 
 export async function getOrderItemsByOrderId(orderId: string) {
+  if (isMockMode) {
+    return [];
+  }
+  
   const { data, error } = await supabase
     .from('order_items')
     .select('*')

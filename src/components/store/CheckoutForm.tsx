@@ -95,35 +95,49 @@ export default function CheckoutForm() {
       if (values.paymentMethod === 'paystack') {
         // Handle Paystack payment
         const reference = generateReference();
+        const paystackKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+        
+        if (!paystackKey) {
+          toast.error('Payment configuration error. Please try again later or use Cash on Delivery.');
+          setIsSubmitting(false);
+          return;
+        }
 
         // Initialize Paystack checkout
         initializePaystack({
-          key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
+          key: paystackKey,
           email: values.email,
           amount: totalPrice() * 100, // Paystack amount is in kobo (100 kobo = 1 Naira)
           ref: reference,
+          currency: 'NGN',
           onClose: () => {
             setIsSubmitting(false);
             toast.info('Payment cancelled');
           },
           callback: async (response: any) => {
             if (response.status === 'success') {
-              // Create order in database
-              const order = await createOrder({
-                user_id: null, // Guest checkout
-                product_ids: items.map(item => item.id),
-                total_amount: totalPrice(),
-                payment_method: 'paystack',
-                status: 'processing',
-                customer_info: {
-                  name: values.name,
-                  email: values.email,
-                  phone: values.phone,
-                  address: values.address,
-                },
-              });
+              try {
+                // Create order in database
+                const order = await createOrder({
+                  user_id: null, // Guest checkout
+                  product_ids: items.map(item => item.id),
+                  total_amount: totalPrice(),
+                  payment_method: 'paystack',
+                  status: 'processing',
+                  customer_info: {
+                    name: values.name,
+                    email: values.email,
+                    phone: values.phone,
+                    address: values.address,
+                  },
+                });
 
-              if (order) {
+                if (!order) {
+                  toast.error('Failed to create order. Please contact support with reference: ' + reference);
+                  setIsSubmitting(false);
+                  return;
+                }
+
                 // Insert order_items
                 const orderItems = items.map(item => ({
                   product_id: item.id,
@@ -132,39 +146,53 @@ export default function CheckoutForm() {
                   quantity: item.quantity,
                   image: item.image || '',
                 }));
+                
                 const itemsResult = await createOrderItems(order.id, orderItems);
-                if (itemsResult) {
-                  clearCart();
-                  router.push('/success');
-                } else {
-                  toast.error('Order created, but failed to save order items. Please contact support.');
+                if (!itemsResult) {
+                  toast.error('Order created, but failed to save order items. Please contact support with reference: ' + reference);
+                  setIsSubmitting(false);
+                  return;
                 }
-              } else {
-                toast.error('Failed to create order. Please contact support.');
+                
+                // Success case
+                clearCart();
+                router.push('/success?ref=' + reference);
+              } catch (error) {
+                console.error('Order creation error:', error);
+                toast.error('Payment successful, but order processing failed. Please contact support with reference: ' + reference);
+                setIsSubmitting(false);
               }
             } else {
               toast.error('Payment failed. Please try again.');
+              setIsSubmitting(false);
             }
-            setIsSubmitting(false);
           },
         });
       } else {
         // Handle Cash on Delivery
-        const order = await createOrder({
-          user_id: null, // Guest checkout
-          product_ids: items.map(item => item.id),
-          total_amount: totalPrice(),
-          payment_method: 'cod',
-          status: 'pending',
-          customer_info: {
-            name: values.name,
-            email: values.email,
-            phone: values.phone,
-            address: values.address,
-          },
-        });
+        try {
+          const codReference = 'COD-' + generateReference();
+          
+          const order = await createOrder({
+            user_id: null, // Guest checkout
+            product_ids: items.map(item => item.id),
+            total_amount: totalPrice(),
+            payment_method: 'cod',
+            status: 'pending',
+            customer_info: {
+              name: values.name,
+              email: values.email,
+              phone: values.phone,
+              address: values.address,
+            },
+          });
 
-        if (order) {
+          if (!order) {
+            toast.error('Failed to create order. Please try again.');
+            setIsSubmitting(false);
+            return;
+          }
+
           // Insert order_items
           const orderItems = items.map(item => ({
             product_id: item.id,
@@ -173,17 +201,22 @@ export default function CheckoutForm() {
             quantity: item.quantity,
             image: item.image || '',
           }));
+          
           const itemsResult = await createOrderItems(order.id, orderItems);
-          if (itemsResult) {
-            clearCart();
-            router.push('/success');
-          } else {
+          if (!itemsResult) {
             toast.error('Order created, but failed to save order items. Please contact support.');
+            setIsSubmitting(false);
+            return;
           }
-        } else {
-          toast.error('Failed to create order. Please try again.');
+          
+          // Success case
+          clearCart();
+          router.push('/success?ref=' + codReference);
+        } catch (error) {
+          console.error('COD order error:', error);
+          toast.error('An error occurred while processing your order. Please try again.');
+          setIsSubmitting(false);
         }
-        setIsSubmitting(false);
       }
     } catch (error) {
       console.error('Checkout error:', error);
