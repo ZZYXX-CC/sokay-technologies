@@ -1,11 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import ShoppingCart from '@/components/store/ShoppingCart';
+
+function CartLoading() {
+  return <div className="animate-pulse bg-prussian_blue/90 h-80 rounded-lg"></div>;
+}
 
 export default function CartPage() {
   return (
@@ -13,7 +17,9 @@ export default function CartPage() {
       <div className="container px-4 pt-16 pb-24 md:pt-20 md:pb-32 mx-auto">
         <div className="bg-prussian_blue/90 rounded-lg shadow-lg p-8 border border-light_blue-500/30">
           <div className="mb-8">
-            <ShoppingCart />
+            <Suspense fallback={<CartLoading />}>
+              <ShoppingCart />
+            </Suspense>
           </div>
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
